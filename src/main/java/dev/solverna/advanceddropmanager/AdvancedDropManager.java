@@ -45,7 +45,7 @@ public class AdvancedDropManager extends JavaPlugin {
             admCommand.setTabCompleter(commandHandler);
         }
 
-        getLogger().info("AdvancedDropManager v" + getPluginMeta().getVersion() + " успешно загружен!");
+        getLogger().info("AdvancedDropManager v" + getDescription().getVersion() + " успешно загружен!");
     }
 
     @Override
