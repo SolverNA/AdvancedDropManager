@@ -11,11 +11,14 @@ public class LootTable {
     private boolean replaceDefault;
     private RollType rollType;
     private List<LootItem> loot;
+    /** Если true — кастомный дроп НЕ применяется при Silk Touch (дефолт: true). */
+    private boolean ignoreSilkTouch;
 
     public LootTable() {
         this.replaceDefault = true;
         this.rollType = RollType.INDEPENDENT;
         this.loot = new ArrayList<>();
+        this.ignoreSilkTouch = true;
     }
 
     public boolean isReplaceDefault() {
@@ -40,5 +43,13 @@ public class LootTable {
 
     public void setLoot(List<LootItem> loot) {
         this.loot = loot;
+    }
+
+    public boolean isIgnoreSilkTouch() {
+        return ignoreSilkTouch;
+    }
+
+    public void setIgnoreSilkTouch(boolean ignoreSilkTouch) {
+        this.ignoreSilkTouch = ignoreSilkTouch;
     }
 }

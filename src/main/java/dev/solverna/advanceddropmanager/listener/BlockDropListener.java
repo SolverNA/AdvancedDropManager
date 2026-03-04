@@ -39,9 +39,9 @@ public class BlockDropListener implements Listener {
 
         Player player = event.getPlayer();
 
-        // Если у игрока Silk Touch - не вмешиваемся в дроп
+        // Если у игрока Silk Touch и для этого блока настроен ignore-silk-touch - не вмешиваемся
         ItemStack tool = player.getInventory().getItemInMainHand();
-        if (tool.containsEnchantment(Enchantment.SILK_TOUCH)) {
+        if (table.isIgnoreSilkTouch() && tool.containsEnchantment(Enchantment.SILK_TOUCH)) {
             return;
         }
 

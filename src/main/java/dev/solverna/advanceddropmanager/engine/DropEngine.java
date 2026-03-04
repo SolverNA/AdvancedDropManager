@@ -46,6 +46,7 @@ public class DropEngine {
     /**
      * Режим WEIGHTED: суммируются веса, выбирается ровно один предмет.
      * Если есть предмет с fortune: true и удача активна — сначала проверяется его шанс.
+     * При провале — fortune-предмет ИСКЛЮЧАЕТСЯ из обычного пула весов (согласно ТЗ).
      */
     private List<ItemStack> calculateWeighted(LootTable table, int fortuneLevel) {
         List<ItemStack> result = new ArrayList<>();
@@ -53,17 +54,18 @@ public class DropEngine {
 
         if (items.isEmpty()) return result;
 
-        // Проверяем, есть ли fortune-предмет и сработала ли удача
+        LootItem fortuneItem = null;
+
+        // Ищем fortune-предмет и проверяем удачу
         if (fortuneLevel > 0) {
             for (LootItem item : items) {
                 if (item.isFortune()) {
+                    fortuneItem = item;
                     double modifiedChance = resolveChance(item, fortuneLevel);
                     if (rollChance(modifiedChance)) {
                         int amount = resolveAmount(item, fortuneLevel);
                         ItemStack stack = createItemStack(item, amount);
-                        if (stack != null) {
-                            result.add(stack);
-                        }
+                        if (stack != null) result.add(stack);
                         return result;
                     }
                     break; // В WEIGHTED только один предмет с fortune
@@ -71,10 +73,12 @@ public class DropEngine {
             }
         }
 
-        // Стандартный взвешенный выбор
+        // Стандартный взвешенный выбор — fortune-предмет исключается из пула если удача была активна
         double totalWeight = 0;
         for (LootItem item : items) {
-            totalWeight += item.getWeight();
+            if (item != fortuneItem) {
+                totalWeight += item.getWeight();
+            }
         }
 
         if (totalWeight <= 0) return result;
@@ -83,13 +87,12 @@ public class DropEngine {
         double cumulative = 0;
 
         for (LootItem item : items) {
+            if (item == fortuneItem) continue;
             cumulative += item.getWeight();
             if (roll < cumulative) {
-                int amount = resolveAmount(item, 0); // В обычном выборе без модификации удачи
+                int amount = resolveAmount(item, 0);
                 ItemStack stack = createItemStack(item, amount);
-                if (stack != null) {
-                    result.add(stack);
-                }
+                if (stack != null) result.add(stack);
                 return result;
             }
         }
@@ -189,18 +192,24 @@ public class DropEngine {
 
     /**
      * Выбирает случайное число из диапазона "min-max".
+     * Если min > max — автоматически меняет местами.
      */
     private int resolveRangeAmount(String amountStr) {
         try {
             if (amountStr.contains("-")) {
-                String[] parts = amountStr.split("-");
+                String[] parts = amountStr.split("-", 2);
                 int min = Integer.parseInt(parts[0].trim());
                 int max = Integer.parseInt(parts[1].trim());
+                if (min > max) {
+                    logger.warning("В amount '" + amountStr + "' min > max, меняем местами.");
+                    int tmp = min; min = max; max = tmp;
+                }
+                if (min == max) return min;
                 return ThreadLocalRandom.current().nextInt(min, max + 1);
             } else {
                 return Integer.parseInt(amountStr.trim());
             }
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException | ArrayIndexOutOfBoundsException e) {
             logger.warning("Ошибка парсинга amount: '" + amountStr + "'. Возвращаем 1.");
             return 1;
         }

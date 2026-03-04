@@ -22,8 +22,8 @@ public class ConfigLoader {
     private final JavaPlugin plugin;
     private final Logger logger;
 
-    private Map<Material, LootTable> blockTables;
-    private Map<EntityType, LootTable> mobTables;
+    private volatile Map<Material, LootTable> blockTables;
+    private volatile Map<EntityType, LootTable> mobTables;
 
     public ConfigLoader(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -41,42 +41,46 @@ public class ConfigLoader {
 
         FileConfiguration config = plugin.getConfig();
 
-        blockTables = loadSection(config, "blocks", true);
-        mobTables = loadSection(config, "mobs", false);
+        blockTables = loadBlockSection(config);
+        mobTables = loadMobSection(config);
 
         logger.info("Загружено " + blockTables.size() + " таблиц дропа для блоков.");
         logger.info("Загружено " + mobTables.size() + " таблиц дропа для мобов.");
     }
 
-    @SuppressWarnings("unchecked")
-    private <K> Map<K, LootTable> loadSection(FileConfiguration config, String sectionName, boolean isBlock) {
-        Map<K, LootTable> result = new HashMap<>();
-        ConfigurationSection section = config.getConfigurationSection(sectionName);
-
-        if (section == null) {
-            return result;
-        }
+    private Map<Material, LootTable> loadBlockSection(FileConfiguration config) {
+        Map<Material, LootTable> result = new HashMap<>();
+        ConfigurationSection section = config.getConfigurationSection("blocks");
+        if (section == null) return result;
 
         for (String key : section.getKeys(false)) {
             ConfigurationSection entrySection = section.getConfigurationSection(key);
             if (entrySection == null) continue;
-
-            // Определяем ключ (Material или EntityType)
-            K mapKey;
             try {
-                if (isBlock) {
-                    mapKey = (K) Material.valueOf(key.toUpperCase());
-                } else {
-                    mapKey = (K) EntityType.valueOf(key.toUpperCase());
-                }
+                Material material = Material.valueOf(key.toUpperCase());
+                LootTable table = parseLootTable(entrySection, key);
+                if (table != null) result.put(material, table);
             } catch (IllegalArgumentException e) {
-                logger.warning("Неизвестный тип '" + key + "' в секции '" + sectionName + "'. Пропускаем.");
-                continue;
+                logger.warning("Неизвестный Material '" + key + "' в секции 'blocks'. Пропускаем.");
             }
+        }
+        return result;
+    }
 
-            LootTable table = parseLootTable(entrySection, key);
-            if (table != null) {
-                result.put(mapKey, table);
+    private Map<EntityType, LootTable> loadMobSection(FileConfiguration config) {
+        Map<EntityType, LootTable> result = new HashMap<>();
+        ConfigurationSection section = config.getConfigurationSection("mobs");
+        if (section == null) return result;
+
+        for (String key : section.getKeys(false)) {
+            ConfigurationSection entrySection = section.getConfigurationSection(key);
+            if (entrySection == null) continue;
+            try {
+                EntityType entityType = EntityType.valueOf(key.toUpperCase());
+                LootTable table = parseLootTable(entrySection, key);
+                if (table != null) result.put(entityType, table);
+            } catch (IllegalArgumentException e) {
+                logger.warning("Неизвестный EntityType '" + key + "' в секции 'mobs'. Пропускаем.");
             }
         }
 
@@ -87,6 +91,7 @@ public class ConfigLoader {
         LootTable table = new LootTable();
 
         table.setReplaceDefault(section.getBoolean("replace-default", true));
+        table.setIgnoreSilkTouch(section.getBoolean("ignore-silk-touch", true));
 
         String rollTypeStr = section.getString("roll-type", "INDEPENDENT").toUpperCase();
         try {
@@ -177,6 +182,10 @@ public class ConfigLoader {
         // Drop Count (взвешенное количество)
         Object dropCountObj = map.get("drop-count");
         if (dropCountObj instanceof Map<?, ?> dropCountMap) {
+            if (map.get("amount") != null) {
+                logger.warning("Предмет '" + item.getId() + "': указаны и 'drop-count' и 'amount' одновременно. " +
+                        "Используется 'drop-count'.");
+            }
             Map<Integer, Integer> parsedDropCount = new LinkedHashMap<>();
             for (Map.Entry<?, ?> entry : dropCountMap.entrySet()) {
                 try {
@@ -184,7 +193,7 @@ public class ConfigLoader {
                     int weight = Integer.parseInt(entry.getValue().toString());
                     parsedDropCount.put(count, weight);
                 } catch (NumberFormatException e) {
-                    logger.warning("Ошибка парсинга drop-count в группе '" + parentKey + "': " +
+                    logger.warning("Ошибка парсинга drop-count для предмета '" + item.getId() + "': " +
                             entry.getKey() + " -> " + entry.getValue());
                 }
             }

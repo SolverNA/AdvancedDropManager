@@ -31,6 +31,7 @@ blocks:
   DIAMOND_ORE:
     replace-default: true
     roll-type: INDEPENDENT
+    ignore-silk-touch: true  # при Silk Touch кастомный дроп не применяется
     loot:
       - id: "rare_diamond"
         provider: MINECRAFT
@@ -56,6 +57,7 @@ blocks:
   DEEPSLATE_DIAMOND_ORE:
     replace-default: true
     roll-type: INDEPENDENT
+    ignore-silk-touch: true
     loot:
       - id: "deep_diamond"
         provider: MINECRAFT
@@ -73,6 +75,7 @@ blocks:
   IRON_ORE:
     replace-default: true
     roll-type: WEIGHTED
+    ignore-silk-touch: true
     loot:
       - id: "raw_iron_common"
         provider: MINECRAFT
