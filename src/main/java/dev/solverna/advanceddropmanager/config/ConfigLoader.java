@@ -1,5 +1,6 @@
 package dev.solverna.advanceddropmanager.config;
 
+import dev.solverna.advanceddropmanager.model.EnchantmentEntry;
 import dev.solverna.advanceddropmanager.model.FortuneAffects;
 import dev.solverna.advanceddropmanager.model.LootItem;
 import dev.solverna.advanceddropmanager.model.LootTable;
@@ -202,6 +203,37 @@ public class ConfigLoader {
 
         // Display Name
         item.setDisplayName(getStringValue(map, "display-name", null));
+
+        // Lore
+        Object loreObj = map.get("lore");
+        if (loreObj instanceof List<?> loreList) {
+            List<String> loreLines = new ArrayList<>();
+            for (Object line : loreList) {
+                if (line != null) {
+                    loreLines.add(line.toString());
+                }
+            }
+            item.setLore(loreLines);
+        }
+
+        // Enchantments
+        Object enchObj = map.get("enchantments");
+        if (enchObj instanceof List<?> enchList) {
+            List<EnchantmentEntry> entries = new ArrayList<>();
+            for (Object enchRaw : enchList) {
+                if (enchRaw instanceof Map<?, ?> enchMap) {
+                    String enchName = getStringValue(enchMap, "enchantment", null);
+                    if (enchName == null) {
+                        logger.warning("Зачарование без поля 'enchantment' в группе '" + parentKey + "'. Пропускаем.");
+                        continue;
+                    }
+                    int level = (int) getDoubleValue(enchMap, "level", 1);
+                    double enchChance = getDoubleValue(enchMap, "chance", 100.0);
+                    entries.add(new EnchantmentEntry(enchName.toUpperCase(), level, enchChance));
+                }
+            }
+            item.setEnchantments(entries);
+        }
 
         return item;
     }

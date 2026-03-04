@@ -25,6 +25,11 @@
 #   amount: "min-max" — диапазон количества (равные шансы)
 #   drop-count: — взвешенное количество (количество: вес)
 #   display-name: — имя предмета (MiniMessage формат)
+#   lore: — список строк описания предмета (MiniMessage формат)
+#   enchantments: — список зачарований
+#     - enchantment: SHARPNESS  # название зачарования (Bukkit/Minecraft ID)
+#       level: 1                # уровень зачарования
+#       chance: 100.0           # шанс применения зачарования в %
 # ============================================================
 
 blocks:
@@ -44,6 +49,13 @@ blocks:
           1: 90
           2: 10
         display-name: "<gold>Редкий Алмаз</gold>"
+        lore:
+          - "<gray>Очень редкий алмаз</gray>"
+          - "<yellow>Найден в глубинах земли</yellow>"
+        enchantments:
+          - enchantment: FORTUNE
+            level: 1
+            chance: 50.0
 
       - id: "diamond_shard"
         provider: MINECRAFT
@@ -71,6 +83,16 @@ blocks:
           2: 25
           3: 5
         display-name: "<dark_purple>Глубинный Алмаз</dark_purple>"
+        lore:
+          - "<dark_purple>Добыт из глубинного сланца</dark_purple>"
+          - "<gray>Шанс выпадения увеличен удачей</gray>"
+        enchantments:
+          - enchantment: FORTUNE
+            level: 2
+            chance: 30.0
+          - enchantment: UNBREAKING
+            level: 3
+            chance: 15.0
 
   IRON_ORE:
     replace-default: true
@@ -154,3 +176,13 @@ mobs:
         fortune-affects: CHANCE
         amount: "1"
         display-name: "<light_purple>Костяной Лук</light_purple>"
+        lore:
+          - "<gray>Лук древнего скелета</gray>"
+          - "<light_purple>Редкая добыча</light_purple>"
+        enchantments:
+          - enchantment: POWER
+            level: 2
+            chance: 60.0
+          - enchantment: INFINITY
+            level: 1
+            chance: 20.0

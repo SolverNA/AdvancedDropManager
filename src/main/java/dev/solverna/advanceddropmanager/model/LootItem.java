@@ -2,7 +2,9 @@ package dev.solverna.advanceddropmanager.model;
 
 import org.bukkit.Material;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,6 +23,8 @@ public class LootItem {
     private String amount;
     private Map<Integer, Integer> dropCount;
     private String displayName;
+    private List<String> lore;
+    private List<EnchantmentEntry> enchantments;
 
     public LootItem() {
         this.provider = "MINECRAFT";
@@ -30,6 +34,8 @@ public class LootItem {
         this.fortuneFactor = 1.0;
         this.fortuneAffects = FortuneAffects.CHANCE;
         this.dropCount = new LinkedHashMap<>();
+        this.lore = new ArrayList<>();
+        this.enchantments = new ArrayList<>();
     }
 
     public String getId() {
@@ -118,5 +124,21 @@ public class LootItem {
 
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public List<String> getLore() {
+        return lore;
+    }
+
+    public void setLore(List<String> lore) {
+        this.lore = lore;
+    }
+
+    public List<EnchantmentEntry> getEnchantments() {
+        return enchantments;
+    }
+
+    public void setEnchantments(List<EnchantmentEntry> enchantments) {
+        this.enchantments = enchantments;
     }
 }
