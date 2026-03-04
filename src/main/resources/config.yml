@@ -1,0 +1,153 @@
+# AdvancedDropManager — Конфигурация дропа
+# Документация: https://github.com/solverna/AdvancedDropManager
+
+# ============================================================
+# БЛОКИ (blocks)
+# ============================================================
+# Настройка кастомного дропа при разрушении блоков.
+# Ключ — Material блока (например, DIAMOND_ORE, IRON_ORE).
+#
+# Параметры группы:
+#   replace-default: true/false — заменять ли ванильный дроп
+#   roll-type: WEIGHTED или INDEPENDENT
+#     WEIGHTED — суммируются веса, выпадает ровно один предмет
+#     INDEPENDENT — каждый предмет бросает шанс отдельно
+#
+# Параметры предмета (loot):
+#   id: уникальный ID предмета (для идентификации)
+#   provider: MINECRAFT (задел на будущие интеграции)
+#   material: Material предмета (DIAMOND, GOLD_INGOT и т.д.)
+#   chance: шанс выпадения в % (для INDEPENDENT)
+#   weight: вес предмета (для WEIGHTED)
+#   fortune: true/false — влияет ли зачарование Удача
+#   fortune-factor: коэффициент удачи (формула: Base × (1 + Level × Factor))
+#   fortune-affects: CHANCE / AMOUNT / BOTH
+#   amount: "min-max" — диапазон количества (равные шансы)
+#   drop-count: — взвешенное количество (количество: вес)
+#   display-name: — имя предмета (MiniMessage формат)
+# ============================================================
+
+blocks:
+  DIAMOND_ORE:
+    replace-default: true
+    roll-type: INDEPENDENT
+    loot:
+      - id: "rare_diamond"
+        provider: MINECRAFT
+        material: DIAMOND
+        chance: 75.0
+        fortune: true
+        fortune-factor: 1.5
+        fortune-affects: CHANCE
+        drop-count:
+          1: 90
+          2: 10
+        display-name: "<gold>Редкий Алмаз</gold>"
+
+      - id: "diamond_shard"
+        provider: MINECRAFT
+        material: DIAMOND
+        chance: 25.0
+        fortune: true
+        fortune-factor: 1.0
+        fortune-affects: AMOUNT
+        amount: "1-3"
+
+  DEEPSLATE_DIAMOND_ORE:
+    replace-default: true
+    roll-type: INDEPENDENT
+    loot:
+      - id: "deep_diamond"
+        provider: MINECRAFT
+        material: DIAMOND
+        chance: 80.0
+        fortune: true
+        fortune-factor: 2.0
+        fortune-affects: BOTH
+        drop-count:
+          1: 70
+          2: 25
+          3: 5
+        display-name: "<dark_purple>Глубинный Алмаз</dark_purple>"
+
+  IRON_ORE:
+    replace-default: true
+    roll-type: WEIGHTED
+    loot:
+      - id: "raw_iron_common"
+        provider: MINECRAFT
+        material: RAW_IRON
+        weight: 80.0
+        fortune: false
+        amount: "1-2"
+
+      - id: "raw_iron_rare"
+        provider: MINECRAFT
+        material: RAW_IRON
+        weight: 20.0
+        fortune: true
+        fortune-factor: 1.0
+        fortune-affects: AMOUNT
+        amount: "3-5"
+        display-name: "<yellow>Богатая Жила</yellow>"
+
+# ============================================================
+# МОБЫ (mobs)
+# ============================================================
+# Настройка кастомного дропа при убийстве мобов.
+# Ключ — EntityType моба (например, ZOMBIE, SKELETON).
+# Параметры аналогичны блокам.
+# Вместо Fortune используется Looting (Добыча).
+# ============================================================
+
+mobs:
+  ZOMBIE:
+    replace-default: true
+    roll-type: INDEPENDENT
+    loot:
+      - id: "rotten_flesh_drop"
+        provider: MINECRAFT
+        material: ROTTEN_FLESH
+        chance: 90.0
+        fortune: true
+        fortune-factor: 0.5
+        fortune-affects: AMOUNT
+        amount: "1-3"
+
+      - id: "iron_ingot_drop"
+        provider: MINECRAFT
+        material: IRON_INGOT
+        chance: 5.0
+        fortune: true
+        fortune-factor: 2.0
+        fortune-affects: CHANCE
+        amount: "1"
+        display-name: "<white>Ржавый Слиток</white>"
+
+  SKELETON:
+    replace-default: true
+    roll-type: WEIGHTED
+    loot:
+      - id: "bone_common"
+        provider: MINECRAFT
+        material: BONE
+        weight: 70.0
+        fortune: false
+        amount: "1-2"
+
+      - id: "arrow_drop"
+        provider: MINECRAFT
+        material: ARROW
+        weight: 25.0
+        fortune: false
+        amount: "1-3"
+
+      - id: "bow_rare"
+        provider: MINECRAFT
+        material: BOW
+        weight: 5.0
+        fortune: true
+        fortune-factor: 1.5
+        fortune-affects: CHANCE
+        amount: "1"
+        display-name: "<light_purple>Костяной Лук</light_purple>"

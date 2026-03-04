@@ -1,0 +1,21 @@
+name: AdvancedDropManager
+version: ${project.version}
+main: dev.solverna.advanceddropmanager.AdvancedDropManager
+api-version: '1.21'
+description: Advanced drop management plugin - полная подмена ванильного дропа блоков и мобов
+authors:
+  - Solverna
+
+commands:
+  adm:
+    description: Управление плагином AdvancedDropManager
+    usage: /adm <reload>
+    permission: advanceddropmanager.use
+
+permissions:
+  advanceddropmanager.use:
+    description: Доступ к команде /adm
+    default: op
+  advanceddropmanager.reload:
+    description: Перезагрузка конфигурации
+    default: op
