@@ -229,7 +229,13 @@ public class ConfigLoader {
                     }
                     int level = (int) getDoubleValue(enchMap, "level", 1);
                     double enchChance = getDoubleValue(enchMap, "chance", 100.0);
-                    entries.add(new EnchantmentEntry(enchName.toUpperCase(), level, enchChance));
+                    EnchantmentEntry entry = new EnchantmentEntry(enchName, level, enchChance);
+                    // Опциональный namespace для кастомных плагинов
+                    String ns = getStringValue(enchMap, "namespace", null);
+                    if (ns != null && !ns.isEmpty()) {
+                        entry.setNamespace(ns.toLowerCase());
+                    }
+                    entries.add(entry);
                 }
             }
             item.setEnchantments(entries);

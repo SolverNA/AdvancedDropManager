@@ -58,28 +58,65 @@ public class MinecraftItemProvider implements ItemProvider {
      */
     private void applyEnchantment(ItemStack item, EnchantmentEntry entry) {
         if (RANDOM.nextDouble() * 100.0 < entry.getChance()) {
-            Enchantment enchantment = resolveEnchantment(entry.getEnchantment());
+            Enchantment enchantment = resolveEnchantment(entry);
             if (enchantment != null) {
                 // unsafe — позволяет применять зачарования к любому предмету и превышать лимит уровней
                 item.addUnsafeEnchantment(enchantment, entry.getLevel());
-            } else {
-                LOGGER.warning("[AdvancedDropManager] Неизвестное зачарование: " + entry.getEnchantment());
             }
         }
     }
 
     /**
-     * Ищет зачарование по имени через Registry (Paper 1.21+).
-     * Поддерживает форматы: "SHARPNESS", "minecraft:sharpness".
+     * Ищет зачарование по имени.
+     *
+     * <p>Порядок разрешения:
+     * <ol>
+     *   <li>Если в {@code entry} задан {@code namespace} — ищет {@code namespace:enchantment}.</li>
+     *   <li>Если {@code enchantment} содержит ":" — использует как готовый {@link NamespacedKey}.</li>
+     *   <li>Иначе пробует {@code minecraft:enchantment}.</li>
+     *   <li>Если не найдено — перебирает все зарегистрированные зачарования и ищет по имени ключа
+     *       (позволяет найти зачарования из сторонних плагинов без явного namespace).</li>
+     * </ol>
      */
-    private Enchantment resolveEnchantment(String name) {
-        // Нормализуем: SHARPNESS -> minecraft:sharpness
-        String normalized = name.toLowerCase();
-        if (!normalized.contains(":")) {
-            normalized = "minecraft:" + normalized;
+    private Enchantment resolveEnchantment(EnchantmentEntry entry) {
+        String name = entry.getEnchantment().toLowerCase();
+        String ns = entry.getNamespace();
+
+        // 1. Явный namespace из поля "namespace:"
+        if (ns != null && !ns.isEmpty()) {
+            NamespacedKey key = new NamespacedKey(ns, name);
+            Enchantment found = Bukkit.getRegistry(Enchantment.class).get(key);
+            if (found != null) return found;
+            LOGGER.warning("[AdvancedDropManager] Зачарование не найдено: " + ns + ":" + name);
+            return null;
         }
-        NamespacedKey key = NamespacedKey.fromString(normalized);
-        if (key == null) return null;
-        return Bukkit.getRegistry(Enchantment.class).get(key);
+
+        // 2. Уже содержит ":" — полный NamespacedKey (например "mmoitems:sharpness")
+        if (name.contains(":")) {
+            NamespacedKey key = NamespacedKey.fromString(name);
+            if (key != null) {
+                Enchantment found = Bukkit.getRegistry(Enchantment.class).get(key);
+                if (found != null) return found;
+            }
+            LOGGER.warning("[AdvancedDropManager] Зачарование не найдено: " + name);
+            return null;
+        }
+
+        // 3. Пробуем minecraft:name
+        NamespacedKey vanillaKey = NamespacedKey.minecraft(name);
+        Enchantment vanilla = Bukkit.getRegistry(Enchantment.class).get(vanillaKey);
+        if (vanilla != null) return vanilla;
+
+        // 4. Fallback: перебираем все зарегистрированные зачарования по ключу
+        //    Помогает найти зачарования сторонних плагинов без явного namespace
+        for (Enchantment ench : Bukkit.getRegistry(Enchantment.class)) {
+            if (ench.getKey().getKey().equalsIgnoreCase(name)) {
+                return ench;
+            }
+        }
+
+        LOGGER.warning("[AdvancedDropManager] Неизвестное зачарование: \"" + entry.getEnchantment()
+                + "\". Убедитесь, что плагин с этим зачарованием загружен и укажите namespace явно.");
+        return null;
     }
 }

@@ -2,13 +2,28 @@ package dev.solverna.advanceddropmanager.model;
 
 /**
  * Модель одного зачарования для предмета лута.
- * Содержит название зачарования, уровень и шанс применения.
+ * Содержит название зачарования, уровень, шанс применения и опциональный namespace.
+ *
+ * <p>Поддерживаемые форматы поля {@code enchantment}:
+ * <ul>
+ *   <li>{@code SHARPNESS} — ванильное зачарование Minecraft</li>
+ *   <li>{@code minecraft:sharpness} — явный namespace Minecraft</li>
+ *   <li>{@code mmoitems:mmo_sharpness} — зачарование из стороннего плагина</li>
+ *   <li>{@code itemsadder:my_ench} — зачарование из ItemsAdder и т.д.</li>
+ * </ul>
+ * Можно также задать namespace отдельным полем {@code namespace}.
  */
 public class EnchantmentEntry {
 
     private String enchantment;
     private int level;
     private double chance;
+    /**
+     * Опциональный namespace плагина/мода (например, "mmoitems", "itemsadder").
+     * Если задан — итоговый ключ будет {@code namespace:enchantment}.
+     * Если {@code enchantment} уже содержит ":" — это поле игнорируется.
+     */
+    private String namespace;
 
     public EnchantmentEntry() {
         this.level = 1;
@@ -22,7 +37,7 @@ public class EnchantmentEntry {
     }
 
     /**
-     * Название зачарования в формате Bukkit (например, SHARPNESS, UNBREAKING).
+     * Название зачарования. Может содержать namespace через ":" или быть просто именем.
      */
     public String getEnchantment() {
         return enchantment;
@@ -30,6 +45,14 @@ public class EnchantmentEntry {
 
     public void setEnchantment(String enchantment) {
         this.enchantment = enchantment;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
     /**

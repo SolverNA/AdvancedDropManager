@@ -27,9 +27,22 @@
 #   display-name: — имя предмета (MiniMessage формат)
 #   lore: — список строк описания предмета (MiniMessage формат)
 #   enchantments: — список зачарований
-#     - enchantment: SHARPNESS  # название зачарования (Bukkit/Minecraft ID)
-#       level: 1                # уровень зачарования
-#       chance: 100.0           # шанс применения зачарования в %
+#     - enchantment: SHARPNESS       # ванильное зачарование (регистр не важен)
+#       level: 1                     # уровень зачарования
+#       chance: 100.0                # шанс применения в %
+#     - enchantment: mmo_sharpness   # зачарование из стороннего плагина
+#       namespace: mmoitems          # явный namespace плагина (необязательно, если указан в имени)
+#       level: 3
+#       chance: 50.0
+#     - enchantment: mmoitems:mmo_sharpness  # полный ключ формата namespace:name
+#       level: 3
+#       chance: 50.0
+#
+# Порядок поиска зачарования:
+#   1. namespace + enchantment → "namespace:enchantment"
+#   2. enchantment содержит ":" → использует как NamespacedKey напрямую
+#   3. Пробует "minecraft:enchantment"
+#   4. Fallback: перебирает все зарегистрированные зачарования по имени ключа
 # ============================================================
 
 blocks:
