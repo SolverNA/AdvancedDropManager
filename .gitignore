@@ -5,13 +5,14 @@ target/
 .kotlin
 
 ### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+.idea/
 *.iws
 *.iml
 *.ipr
+
+### Personal / private files ###
+тз.txt
+CONTEXT.md
 
 ### Eclipse ###
 .apt_generated
