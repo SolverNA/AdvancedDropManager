@@ -3,6 +3,8 @@ package dev.solverna.advanceddropmanager.listener;
 import dev.solverna.advanceddropmanager.config.ConfigLoader;
 import dev.solverna.advanceddropmanager.engine.DropEngine;
 import dev.solverna.advanceddropmanager.model.LootTable;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.enchantments.Enchantment;
@@ -39,6 +41,11 @@ public class BlockDropListener implements Listener {
 
         Player player = event.getPlayer();
 
+        // В креативном режиме предметы не выпадают
+        if (player.getGameMode() == GameMode.CREATIVE) {
+            return;
+        }
+
         // Если у игрока Silk Touch и для этого блока настроен ignore-silk-touch - не вмешиваемся
         ItemStack tool = player.getInventory().getItemInMainHand();
         if (table.isIgnoreSilkTouch() && tool.containsEnchantment(Enchantment.SILK_TOUCH)) {
@@ -53,10 +60,11 @@ public class BlockDropListener implements Listener {
             event.setDropItems(false);
         }
 
-        // Рассчитываем и дропаем предметы
+        // Рассчитываем и дропаем предметы из центра блока
         List<ItemStack> drops = dropEngine.calculateDrops(table, fortuneLevel);
+        Location center = block.getLocation().add(0.5, 0.0, 0.5);
         for (ItemStack drop : drops) {
-            block.getWorld().dropItemNaturally(block.getLocation(), drop);
+            block.getWorld().dropItemNaturally(center, drop);
         }
     }
 }
