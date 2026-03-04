@@ -135,7 +135,6 @@ public class ConfigLoader {
         return table;
     }
 
-    @SuppressWarnings("unchecked")
     private LootItem parseLootItem(Map<?, ?> map, String parentKey) {
         LootItem item = new LootItem();
 

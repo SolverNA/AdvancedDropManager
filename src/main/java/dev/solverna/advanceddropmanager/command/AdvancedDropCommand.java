@@ -6,6 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,9 +22,11 @@ public class AdvancedDropCommand implements CommandExecutor, TabCompleter {
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
 
     private final ConfigLoader configLoader;
+    private final JavaPlugin plugin;
 
-    public AdvancedDropCommand(ConfigLoader configLoader) {
+    public AdvancedDropCommand(ConfigLoader configLoader, JavaPlugin plugin) {
         this.configLoader = configLoader;
+        this.plugin = plugin;
     }
 
     @Override
@@ -31,7 +34,7 @@ public class AdvancedDropCommand implements CommandExecutor, TabCompleter {
                              @NotNull String label, @NotNull String[] args) {
         if (args.length == 0) {
             sender.sendMessage(MINI_MESSAGE.deserialize(
-                    "<gold>AdvancedDropManager</gold> <gray>v1.0</gray>"));
+                    "<gold>AdvancedDropManager</gold> <gray>v" + plugin.getPluginMeta().getVersion() + "</gray>"));
             sender.sendMessage(MINI_MESSAGE.deserialize(
                     "<yellow>/adm reload</yellow> <gray>— перезагрузить конфигурацию</gray>"));
             return true;
@@ -49,8 +52,11 @@ public class AdvancedDropCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(MINI_MESSAGE.deserialize(
                         "<green>Конфигурация успешно перезагружена!</green>"));
             } catch (Exception e) {
+                // Экранируем сообщение об ошибке, чтобы спецсимволы <> не сломали MiniMessage
+                String safeMessage = e.getMessage() == null ? "неизвестная ошибка"
+                        : e.getMessage().replace("<", "\\<").replace(">", "\\>");
                 sender.sendMessage(MINI_MESSAGE.deserialize(
-                        "<red>Ошибка при перезагрузке конфигурации: " + e.getMessage() + "</red>"));
+                        "<red>Ошибка при перезагрузке конфигурации: " + safeMessage + "</red>"));
             }
             return true;
         }

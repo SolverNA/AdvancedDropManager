@@ -2,15 +2,17 @@ package dev.solverna.advanceddropmanager.provider;
 
 import dev.solverna.advanceddropmanager.model.EnchantmentEntry;
 import dev.solverna.advanceddropmanager.model.LootItem;
+import io.papermc.paper.registry.RegistryAccess;
+import io.papermc.paper.registry.RegistryKey;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
 
 /**
@@ -20,7 +22,6 @@ import java.util.logging.Logger;
 public class MinecraftItemProvider implements ItemProvider {
 
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
-    private static final Random RANDOM = new Random();
     private static final Logger LOGGER = Logger.getLogger("AdvancedDropManager");
 
     @Override
@@ -57,7 +58,7 @@ public class MinecraftItemProvider implements ItemProvider {
      * Применяет одно зачарование к предмету с учётом шанса.
      */
     private void applyEnchantment(ItemStack item, EnchantmentEntry entry) {
-        if (RANDOM.nextDouble() * 100.0 < entry.getChance()) {
+        if (ThreadLocalRandom.current().nextDouble() * 100.0 < entry.getChance()) {
             Enchantment enchantment = resolveEnchantment(entry);
             if (enchantment != null) {
                 // unsafe — позволяет применять зачарования к любому предмету и превышать лимит уровней
@@ -81,11 +82,12 @@ public class MinecraftItemProvider implements ItemProvider {
     private Enchantment resolveEnchantment(EnchantmentEntry entry) {
         String name = entry.getEnchantment().toLowerCase();
         String ns = entry.getNamespace();
+        Registry<Enchantment> registry = RegistryAccess.registryAccess().getRegistry(RegistryKey.ENCHANTMENT);
 
         // 1. Явный namespace из поля "namespace:"
         if (ns != null && !ns.isEmpty()) {
             NamespacedKey key = new NamespacedKey(ns, name);
-            Enchantment found = Bukkit.getRegistry(Enchantment.class).get(key);
+            Enchantment found = registry.get(key);
             if (found != null) return found;
             LOGGER.warning("[AdvancedDropManager] Зачарование не найдено: " + ns + ":" + name);
             return null;
@@ -95,7 +97,7 @@ public class MinecraftItemProvider implements ItemProvider {
         if (name.contains(":")) {
             NamespacedKey key = NamespacedKey.fromString(name);
             if (key != null) {
-                Enchantment found = Bukkit.getRegistry(Enchantment.class).get(key);
+                Enchantment found = registry.get(key);
                 if (found != null) return found;
             }
             LOGGER.warning("[AdvancedDropManager] Зачарование не найдено: " + name);
@@ -104,12 +106,12 @@ public class MinecraftItemProvider implements ItemProvider {
 
         // 3. Пробуем minecraft:name
         NamespacedKey vanillaKey = NamespacedKey.minecraft(name);
-        Enchantment vanilla = Bukkit.getRegistry(Enchantment.class).get(vanillaKey);
+        Enchantment vanilla = registry.get(vanillaKey);
         if (vanilla != null) return vanilla;
 
         // 4. Fallback: перебираем все зарегистрированные зачарования по ключу
         //    Помогает найти зачарования сторонних плагинов без явного namespace
-        for (Enchantment ench : Bukkit.getRegistry(Enchantment.class)) {
+        for (Enchantment ench : registry) {
             if (ench.getKey().getKey().equalsIgnoreCase(name)) {
                 return ench;
             }

@@ -40,12 +40,12 @@ public class AdvancedDropManager extends JavaPlugin {
         // Регистрация команды
         PluginCommand admCommand = getCommand("adm");
         if (admCommand != null) {
-            AdvancedDropCommand commandHandler = new AdvancedDropCommand(configLoader);
+            AdvancedDropCommand commandHandler = new AdvancedDropCommand(configLoader, this);
             admCommand.setExecutor(commandHandler);
             admCommand.setTabCompleter(commandHandler);
         }
 
-        getLogger().info("AdvancedDropManager v" + getDescription().getVersion() + " успешно загружен!");
+        getLogger().info("AdvancedDropManager v" + getPluginMeta().getVersion() + " успешно загружен!");
     }
 
     @Override
