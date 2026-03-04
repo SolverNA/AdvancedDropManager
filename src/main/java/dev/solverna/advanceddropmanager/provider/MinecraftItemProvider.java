@@ -11,6 +11,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
@@ -30,12 +31,12 @@ public class MinecraftItemProvider implements ItemProvider {
 
         item.editMeta(meta -> {
             // Display Name
-            if (lootItem.getDisplayName() != null && !lootItem.getDisplayName().isEmpty()) {
+            if (hasContent(lootItem.getDisplayName())) {
                 meta.displayName(MINI_MESSAGE.deserialize(lootItem.getDisplayName()));
             }
 
             // Lore
-            if (lootItem.getLore() != null && !lootItem.getLore().isEmpty()) {
+            if (hasContent(lootItem.getLore())) {
                 List<net.kyori.adventure.text.Component> loreComponents = new ArrayList<>();
                 for (String line : lootItem.getLore()) {
                     loreComponents.add(MINI_MESSAGE.deserialize(line));
@@ -45,13 +46,23 @@ public class MinecraftItemProvider implements ItemProvider {
         });
 
         // Enchantments (применяем отдельно, так как unsafeEnchant не через editMeta)
-        if (lootItem.getEnchantments() != null && !lootItem.getEnchantments().isEmpty()) {
+        if (hasContent(lootItem.getEnchantments())) {
             for (EnchantmentEntry entry : lootItem.getEnchantments()) {
                 applyEnchantment(item, entry);
             }
         }
 
         return item;
+    }
+
+    /** Возвращает true если строка не null и не пустая. */
+    private boolean hasContent(String s) {
+        return s != null && !s.isEmpty();
+    }
+
+    /** Возвращает true если коллекция не null и не пустая. */
+    private boolean hasContent(Collection<?> c) {
+        return c != null && !c.isEmpty();
     }
 
     /**

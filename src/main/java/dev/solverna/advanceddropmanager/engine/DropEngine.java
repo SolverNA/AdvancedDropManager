@@ -131,7 +131,7 @@ public class DropEngine {
         if (item.isFortune() && fortuneLevel > 0) {
             FortuneAffects affects = item.getFortuneAffects();
             if (affects == FortuneAffects.CHANCE || affects == FortuneAffects.BOTH) {
-                baseChance = baseChance * (1 + fortuneLevel * item.getFortuneFactor());
+                baseChance *= fortuneMultiplier(item, fortuneLevel);
             }
         }
 
@@ -158,12 +158,19 @@ public class DropEngine {
         if (item.isFortune() && fortuneLevel > 0) {
             FortuneAffects affects = item.getFortuneAffects();
             if (affects == FortuneAffects.AMOUNT || affects == FortuneAffects.BOTH) {
-                double multiplied = baseAmount * (1 + fortuneLevel * item.getFortuneFactor());
-                baseAmount = (int) Math.round(multiplied);
+                baseAmount = (int) Math.round(baseAmount * fortuneMultiplier(item, fortuneLevel));
             }
         }
 
         return Math.max(1, baseAmount);
+    }
+
+    /**
+     * Вычисляет мультипликатор удачи: (1 + уровень × коэффициент).
+     * Используется и для шанса, и для количества — единая формула из ТЗ.
+     */
+    private double fortuneMultiplier(LootItem item, int fortuneLevel) {
+        return 1.0 + fortuneLevel * item.getFortuneFactor();
     }
 
     /**
